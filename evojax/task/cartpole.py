@@ -116,19 +116,16 @@ class CartPoleSwingUp(VectorizedTask):
                  test: bool = False):
 
         self.max_steps = max_steps
-        self.obs_shape = tuple([5, ])
-        self.act_shape = tuple([1, ])
+        self.obs_shape = (5, )
+        self.act_shape = (1, )
         self.test = test
-        if harder:
-            get_init_state_fn = get_init_state_hard
-        else:
-            get_init_state_fn = get_init_state_easy
-
+        get_init_state_fn = get_init_state_hard if harder else get_init_state_easy
         def reset_fn(key):
             next_key, key = random.split(key)
             state = get_init_state_fn(key)
             return State(state=state, obs=get_obs(state),
                          steps=jnp.zeros((), dtype=int), key=next_key)
+
         self._reset_fn = jax.jit(jax.vmap(reset_fn))
 
         def step_fn(state, action):
@@ -142,6 +139,7 @@ class CartPoleSwingUp(VectorizedTask):
                 done, lambda x: get_init_state_fn(key), lambda x: x, cur_state)
             return State(state=cur_state, obs=get_obs(state=cur_state),
                          steps=steps, key=next_key), reward, done
+
         self._step_fn = jax.jit(jax.vmap(step_fn))
 
     def reset(self, key: jnp.ndarray) -> State:

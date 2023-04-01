@@ -68,8 +68,7 @@ def main(config):
     tar_file = os.path.join(log_dir, "model.npz")
     shutil.copy(src_file, tar_file)
     trainer.model_dir = log_dir
-    score = trainer.run(demo_mode=True)
-    return score
+    return trainer.run(demo_mode=True)
 
 
 if __name__ == "__main__":

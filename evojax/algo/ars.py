@@ -74,11 +74,7 @@ class ARS(NEAlgorithm):
 
         # Set up object variables.
 
-        if logger is None:
-            self.logger = create_logger(name="ARS")
-        else:
-            self.logger = logger
-
+        self.logger = create_logger(name="ARS") if logger is None else logger
         self.param_size = param_size
         self.pop_size = abs(pop_size)
         self.elite_ratio = elite_ratio

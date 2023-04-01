@@ -115,9 +115,9 @@ class CMA_ES_JAX(NEAlgorithm):
         else:
             mean = ensure_jnp(mean)
             assert mean.shape == (param_size,), \
-                f"Both params_size and mean are specified." \
-                f"In this case,  mean (whose shape is {mean.shape}) must have a dimension of (param_size, )" \
-                f" (i.e. {(param_size, )}), which is not true."
+                    f"Both params_size and mean are specified." \
+                    f"In this case,  mean (whose shape is {mean.shape}) must have a dimension of (param_size, )" \
+                    f" (i.e. {(param_size, )}), which is not true."
         mean = ensure_jnp(mean)
 
         if enable_numeric_check:
@@ -190,7 +190,7 @@ class CMA_ES_JAX(NEAlgorithm):
         # learning rate for the cumulation for the step-size control (eq.55)
         c_sigma = (mu_eff + 2) / (n_dim + mu_eff + 5)
         d_sigma = 1 + 2 * \
-            max(0, math.sqrt((mu_eff - 1) / (n_dim + 1)) - 1) + c_sigma
+                max(0, math.sqrt((mu_eff - 1) / (n_dim + 1)) - 1) + c_sigma
         assert (
             c_sigma < 1
         ), "invalid learning rate for cumulation for the step-size control"
@@ -243,11 +243,7 @@ class CMA_ES_JAX(NEAlgorithm):
 
         # Below are helper vars.
         self._latest_solutions = None
-        if logger is None:
-            # Change this name accordingly
-            self.logger = create_logger(name="CMA")
-        else:
-            self.logger = logger
+        self.logger = create_logger(name="CMA") if logger is None else logger
 
     @property
     def dim(self) -> int:
@@ -286,9 +282,7 @@ class CMA_ES_JAX(NEAlgorithm):
         key, subkey = jax.random.split(self.state.key)
         self.state = self.state._replace(key=key)
         subkey = jax.random.split(subkey, n_samples)
-        x = _batch_sample_solution(subkey, B, D, n_dim, mean, sigma)
-
-        return x
+        return _batch_sample_solution(subkey, B, D, n_dim, mean, sigma)
 
     def ask(self, n_samples: int = None) -> jnp.ndarray:
         """A wrapper of _ask, which handles optional n_samples and saves latest samples."""
@@ -450,8 +444,7 @@ def _tell_core(
 def _sample_solution(key, B, D, n_dim, mean, sigma) -> jnp.ndarray:
     z = jax.random.normal(key, shape=(n_dim,))   # ~ N(0, I)
     y = B.dot(jnp.diag(D)).dot(z)  # ~ N(0, C)
-    x = mean + sigma * y  # ~ N(m, σ^2 C)
-    return x
+    return mean + sigma * y
 
 
 _batch_sample_solution = jax.jit(

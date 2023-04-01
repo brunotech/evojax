@@ -70,11 +70,7 @@ class OpenES(NEAlgorithm):
             print("  pip install evosax")
             sys.exit(1)
 
-        if logger is None:
-            self.logger = create_logger(name="OpenES")
-        else:
-            self.logger = logger
-
+        self.logger = create_logger(name="OpenES") if logger is None else logger
         self.param_size = param_size
         self.pop_size = abs(pop_size)
         self.rand_key = jax.random.PRNGKey(seed=seed)

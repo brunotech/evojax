@@ -75,7 +75,7 @@ def plot_figure(lattice, log_dir, title):
             ax.imshow(grid[i, j])
             ax.set_axis_off()
     fig.suptitle(title, fontsize=20, fontweight='bold')
-    plt.savefig(os.path.join(log_dir, '{}.png'.format(title)))
+    plt.savefig(os.path.join(log_dir, f'{title}.png'))
 
 
 def main(config):

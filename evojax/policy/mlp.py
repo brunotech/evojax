@@ -43,8 +43,7 @@ class MLP(nn.Module):
         elif self.out_fn == 'softmax':
             x = nn.softmax(x, axis=-1)
         else:
-            raise ValueError(
-                'Unsupported output activation: {}'.format(self.out_fn))
+            raise ValueError(f'Unsupported output activation: {self.out_fn}')
         return x
 
 
@@ -57,16 +56,12 @@ class MLPPolicy(PolicyNetwork):
                  output_dim: int,
                  output_act_fn: str = 'tanh',
                  logger: logging.Logger = None):
-        if logger is None:
-            self._logger = create_logger(name='MLPPolicy')
-        else:
-            self._logger = logger
-
+        self._logger = create_logger(name='MLPPolicy') if logger is None else logger
         model = MLP(
             feat_dims=hidden_dims, out_dim=output_dim, out_fn=output_act_fn)
         params = model.init(random.PRNGKey(0), jnp.ones([1, input_dim]))
         self.num_params, format_params_fn = get_params_format_fn(params)
-        self._logger.info('MLPPolicy.num_params = {}'.format(self.num_params))
+        self._logger.info(f'MLPPolicy.num_params = {self.num_params}')
         self._format_params_fn = jax.vmap(format_params_fn)
         self._forward_fn = jax.vmap(model.apply)
 

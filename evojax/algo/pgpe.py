@@ -44,12 +44,11 @@ def process_scores(
     """Convert fitness scores to rank if necessary."""
 
     x = jnp.array(x)
-    if use_ranking:
-        ranks = jnp.zeros(x.size, dtype=int)
-        ranks = ranks.at[x.argsort()].set(jnp.arange(x.size)).reshape(x.shape)
-        return ranks / ranks.max() - 0.5
-    else:
+    if not use_ranking:
         return x
+    ranks = jnp.zeros(x.size, dtype=int)
+    ranks = ranks.at[x.argsort()].set(jnp.arange(x.size)).reshape(x.shape)
+    return ranks / ranks.max() - 0.5
 
 
 @jax.jit
@@ -142,18 +141,12 @@ class PGPE(NEAlgorithm):
             seed - Random seed for parameters sampling.
         """
 
-        if logger is None:
-            self._logger = create_logger(name="PGPE")
-        else:
-            self._logger = logger
-
+        self._logger = create_logger(name="PGPE") if logger is None else logger
         self.pop_size = abs(pop_size)
         if self.pop_size % 2 == 1:
             self.pop_size += 1
             self._logger.info(
-                "Population size should be an even number, set to {}".format(
-                    self.pop_size
-                )
+                f"Population size should be an even number, set to {self.pop_size}"
             )
         self._num_directions = self.pop_size // 2
 

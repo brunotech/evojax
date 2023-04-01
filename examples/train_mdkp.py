@@ -158,10 +158,10 @@ def main(config):
     logger.info('')
     logger.info('Summary of results')
     logger.info('=' * 30)
-    logger.info('Number of attributes: {}'.format(test_task.num_attrs))
-    logger.info('Number of items: {}'.format(test_task.num_items))
-    logger.info('Number of bins: {}'.format(test_task.num_bins))
-    logger.info('Caps: {}'.format(test_task.caps))
+    logger.info(f'Number of attributes: {test_task.num_attrs}')
+    logger.info(f'Number of items: {test_task.num_items}')
+    logger.info(f'Number of bins: {test_task.num_bins}')
+    logger.info(f'Caps: {test_task.caps}')
     best_params = trainer.solver.best_params[None, :]
     task_reset_fn = jax.jit(test_task.reset)
     policy_reset_fn = jax.jit(policy.reset)
@@ -183,9 +183,9 @@ def main(config):
     else:
         result_csv = os.path.join(log_dir, 'results.csv')
         pd.DataFrame(results).to_csv(result_csv, header=None)
-        logger.info('Number of selected items: {}'.format(num_selected_items))
-        logger.info('Total value: {}'.format(float(reward)))
-        logger.info('Results saved to {}'.format(result_csv))
+        logger.info(f'Number of selected items: {num_selected_items}')
+        logger.info(f'Total value: {float(reward)}')
+        logger.info(f'Results saved to {result_csv}')
 
 
 if __name__ == '__main__':

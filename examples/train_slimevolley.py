@@ -144,7 +144,7 @@ def main(config):
     gif_file = os.path.join(log_dir, 'slimevolley.gif')
     screens[0].save(gif_file, save_all=True, append_images=screens[1:],
                     duration=40, loop=0)
-    logger.info('GIF saved to {}.'.format(gif_file))
+    logger.info(f'GIF saved to {gif_file}.')
 
 
 if __name__ == '__main__':

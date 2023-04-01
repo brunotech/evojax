@@ -48,16 +48,11 @@ class ConvNetPolicy(PolicyNetwork):
     """A convolutional neural network for the MNIST classification task."""
 
     def __init__(self, logger: logging.Logger = None):
-        if logger is None:
-            self._logger = create_logger('ConvNetPolicy')
-        else:
-            self._logger = logger
-
+        self._logger = create_logger('ConvNetPolicy') if logger is None else logger
         model = CNN()
         params = model.init(random.PRNGKey(0), jnp.zeros([1, 28, 28, 1]))
         self.num_params, format_params_fn = get_params_format_fn(params)
-        self._logger.info(
-            'ConvNetPolicy.num_params = {}'.format(self.num_params))
+        self._logger.info(f'ConvNetPolicy.num_params = {self.num_params}')
         self._format_params_fn = jax.vmap(format_params_fn)
         self._forward_fn = jax.vmap(model.apply)
 

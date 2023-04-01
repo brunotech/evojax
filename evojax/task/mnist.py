@@ -59,8 +59,8 @@ class MNIST(VectorizedTask):
                  test: bool = False):
 
         self.max_steps = 1
-        self.obs_shape = tuple([28, 28, 1])
-        self.act_shape = tuple([10, ])
+        self.obs_shape = 28, 28, 1
+        self.act_shape = (10, )
 
         # Delayed importing of torchvision
 
@@ -82,6 +82,7 @@ class MNIST(VectorizedTask):
                 batch_data, batch_labels = sample_batch(
                     key, data, labels, batch_size)
             return State(obs=batch_data, labels=batch_labels)
+
         self._reset_fn = jax.jit(jax.vmap(reset_fn))
 
         def step_fn(state, action):
@@ -90,6 +91,7 @@ class MNIST(VectorizedTask):
             else:
                 reward = -loss(action, state.labels)
             return state, reward, jnp.ones(())
+
         self._step_fn = jax.jit(jax.vmap(step_fn))
 
     def reset(self, key: jnp.ndarray) -> State:

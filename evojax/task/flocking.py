@@ -86,8 +86,7 @@ def map_product(displacement):
 
 
 def calc_distance(dR: jnp.ndarray) -> jnp.ndarray:
-    dr = jnp.sqrt(jnp.sum(dR**2, axis=-1))
-    return dr
+    return jnp.sqrt(jnp.sum(dR**2, axis=-1))
 
 
 def select_xy(xy: jnp.ndarray, ix: jnp.ndarray) -> jnp.ndarray:
@@ -178,9 +177,9 @@ def update_state(state, action, action_type):
         lambda x: x,
         d_speed
         )
-    new_obs = pack_obs(jnp.mod(position + DT * SPEED * N * d_speed, 1),
-                       theta + DT * d_theta)
-    return new_obs
+    return pack_obs(
+        jnp.mod(position + DT * SPEED * N * d_speed, 1), theta + DT * d_theta
+    )
 
 
 def get_reward(state: State, max_steps: jnp.int32, reward_type: jnp.int32):
@@ -256,8 +255,8 @@ class FlockingTask(VectorizedTask):
             action_type: int = 0   # (0: theta, 1: theta/speed)
             ):
         self.max_steps = max_steps
-        self.obs_shape = tuple([NEIGHBOR_NUM * 3, BOIDS_NUM])
-        self.act_shape = tuple([action_type + 1, ])
+        self.obs_shape = NEIGHBOR_NUM * 3, BOIDS_NUM
+        self.act_shape = (action_type + 1, )
 
         def reset_fn(key):
             next_key, key = jax.random.split(key)
@@ -268,6 +267,7 @@ class FlockingTask(VectorizedTask):
                          state=state,
                          steps=jnp.zeros((), dtype=jnp.int32),
                          key=next_key)
+
         self._reset_fn = jax.jit(jax.vmap(reset_fn))
 
         def step_fn(state, action):
@@ -281,6 +281,7 @@ class FlockingTask(VectorizedTask):
                          state=new_state,
                          steps=new_steps,
                          key=next_key), reward, done
+
         self._step_fn = jax.jit(jax.vmap(step_fn))
 
     def step(self, state: State,

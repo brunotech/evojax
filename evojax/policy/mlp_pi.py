@@ -124,9 +124,7 @@ class PermutationInvariantPolicy(PolicyNetwork):
                     jnp.zeros([obs_dim, pos_em_dim])),
         )
         self.num_params, format_params_fn = get_params_format_fn(params)
-        self._logger.info(
-            'PermutationInvariantPolicy.num_params = {}'.format(self.num_params)
-        )
+        self._logger.info(f'PermutationInvariantPolicy.num_params = {self.num_params}')
         self._format_params_fn = jax.vmap(format_params_fn)
         self._forward_fn = jax.vmap(model.apply)
 

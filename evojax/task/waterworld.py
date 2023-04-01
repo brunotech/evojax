@@ -311,8 +311,8 @@ class WaterWorld(VectorizedTask):
 
         self.max_steps = max_steps
         self.test = test
-        self.obs_shape = tuple([NUM_RANGE_SENSORS * SENSOR_DATA_DIM + 2, ])
-        self.act_shape = tuple([4, ])
+        self.obs_shape = (NUM_RANGE_SENSORS * SENSOR_DATA_DIM + 2, )
+        self.act_shape = (4, )
         walls = jnp.array([[0, 0, 0, SCREEN_H],
                            [0, SCREEN_H, SCREEN_W, SCREEN_H],
                            [SCREEN_W, SCREEN_H, SCREEN_W, 0],
@@ -326,6 +326,7 @@ class WaterWorld(VectorizedTask):
             obs = get_obs(agent, items, walls)
             return State(agent_state=agent, item_state=items, obs=obs,
                          steps=jnp.zeros((), dtype=jnp.int32), key=next_key)
+
         self._reset_fn = jax.jit(jax.vmap(reset_fn))
 
         def step_fn(state, action):
@@ -340,6 +341,7 @@ class WaterWorld(VectorizedTask):
             obs = get_obs(agent, items, walls)
             return State(agent_state=agent, item_state=items, obs=obs,
                          steps=steps, key=next_key), reward, done
+
         self._step_fn = jax.jit(jax.vmap(step_fn))
 
     def reset(self, key: jnp.array) -> State:

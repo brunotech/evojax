@@ -41,10 +41,7 @@ class CMA(NEAlgorithm):
                  init_stdev: float = 0.1,
                  seed: int = 0,
                  logger: logging.Logger = None):
-        if logger is None:
-            self.logger = create_logger(name='CMA')
-        else:
-            self.logger = logger
+        self.logger = create_logger(name='CMA') if logger is None else logger
         self.pop_size = pop_size
 
         try:

@@ -107,9 +107,7 @@ def convert(obj):
         return float(obj)
     if isinstance(obj, np.ndarray):
         return convert(obj.tolist())
-    if isinstance(obj, np.bool_):
-        return int(obj)
-    return obj
+    return int(obj) if isinstance(obj, np.bool_) else obj
 
 
 def save_yaml(obj: dict, filename: str) -> None:

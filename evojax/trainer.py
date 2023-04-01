@@ -116,8 +116,7 @@ class Trainer(object):
         if self.model_dir is not None:
             params, obs_params = load_model(model_dir=self.model_dir)
             self.sim_mgr.obs_params = obs_params
-            self._logger.info(
-                'Loaded model parameters from {}.'.format(self.model_dir))
+            self._logger.info(f'Loaded model parameters from {self.model_dir}.')
         else:
             params = None
 
@@ -133,8 +132,7 @@ class Trainer(object):
                                      scores.min(), scores.std()))
             return scores.mean()
         else:
-            self._logger.info(
-                'Start to train for {} iterations.'.format(self._max_iter))
+            self._logger.info(f'Start to train for {self._max_iter} iterations.')
 
             if params is not None:
                 # Continue training from the breakpoint.
@@ -184,7 +182,7 @@ class Trainer(object):
                     mean_test_score = test_scores.mean()
                     save_model(
                         model_dir=self._log_dir,
-                        model_name='iter_{}'.format(i),
+                        model_name=f'iter_{i}',
                         params=best_params,
                         obs_params=self.sim_mgr.obs_params,
                         best=mean_test_score > best_score,

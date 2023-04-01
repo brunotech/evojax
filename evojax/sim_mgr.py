@@ -41,12 +41,11 @@ def get_task_reset_keys(key: jnp.ndarray,
     key, subkey = random.split(key=key)
     if ma_training:
         reset_keys = random.split(subkey, n_repeats)
+    elif test:
+        reset_keys = random.split(subkey, n_tests * n_repeats)
     else:
-        if test:
-            reset_keys = random.split(subkey, n_tests * n_repeats)
-        else:
-            reset_keys = random.split(subkey, n_repeats)
-            reset_keys = jnp.tile(reset_keys, (pop_size, 1))
+        reset_keys = random.split(subkey, n_repeats)
+        reset_keys = jnp.tile(reset_keys, (pop_size, 1))
     return key, reset_keys
 
 
@@ -64,7 +63,7 @@ def split_states_for_pmap(
 @jax.jit
 def reshape_data_from_pmap(data: jnp.ndarray) -> jnp.ndarray:
     # data.shape = (#device, steps, #jobs/device, *)
-    data = data.transpose([1, 0] + [i for i in range(2, data.ndim)])
+    data = data.transpose([1, 0] + list(range(2, data.ndim)))
     return jnp.reshape(data, (data.shape[0], data.shape[1] * data.shape[2], -1))
 
 
@@ -131,11 +130,7 @@ class SimManager(object):
             logger - Logger.
         """
 
-        if logger is None:
-            self._logger = create_logger(name='SimManager')
-        else:
-            self._logger = logger
-
+        self._logger = create_logger(name='SimManager') if logger is None else logger
         self._use_for_loop = use_for_loop
         self._logger.info('use_for_loop={}'.format(self._use_for_loop))
         self._key = random.PRNGKey(seed=seed)
@@ -289,7 +284,7 @@ class SimManager(object):
         start_time = time.perf_counter()
         rollout_steps = 0
         sim_steps = 0
-        for i in range(task_max_steps):
+        for _ in range(task_max_steps):
             actions, policy_state = policy_act_func(
                 task_state, params, policy_state)
             task_state, reward, done = task_step_func(task_state, actions)
@@ -300,9 +295,9 @@ class SimManager(object):
             if all_done(valid_mask):
                 break
         time_cost = time.perf_counter() - start_time
-        self._logger.debug('{} steps/s, mean.steps={}'.format(
-            int(rollout_steps * task_state.obs.shape[0] / time_cost),
-            sim_steps.sum() / task_state.obs.shape[0]))
+        self._logger.debug(
+            f'{int(rollout_steps * task_state.obs.shape[0] / time_cost)} steps/s, mean.steps={sim_steps.sum() / task_state.obs.shape[0]}'
+        )
 
         return report_score(scores, n_repeats), task_state
 
@@ -364,14 +359,11 @@ class SimManager(object):
                 obs_buffer=all_obs, obs_mask=masks, obs_params=self.obs_params)
 
         if self._ma_training:
-            if not test:
-                # In training, each agent has different parameters.
-                scores = jnp.mean(
-                    scores.ravel().reshape((n_repeats, -1)), axis=0)
-            else:
-                # In tests, they share the same parameters.
-                scores = jnp.mean(
-                    scores.ravel().reshape((n_repeats, -1)), axis=1)
+            scores = (
+                jnp.mean(scores.ravel().reshape((n_repeats, -1)), axis=1)
+                if test
+                else jnp.mean(scores.ravel().reshape((n_repeats, -1)), axis=0)
+            )
         else:
             scores = jnp.mean(scores.ravel().reshape((-1, n_repeats)), axis=-1)
 

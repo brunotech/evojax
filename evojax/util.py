@@ -62,7 +62,7 @@ def create_logger(name: str,
         level=logging.DEBUG if debug else logging.INFO, format=log_format)
     logger = logging.getLogger(name)
     if log_dir:
-        log_file = os.path.join(log_dir, '{}.txt'.format(name))
+        log_file = os.path.join(log_dir, f'{name}.txt')
         file_hdl = logging.FileHandler(log_file)
         formatter = logging.Formatter(fmt=log_format)
         file_hdl.setFormatter(formatter)
@@ -104,7 +104,7 @@ def save_model(model_dir: str,
         best - Whether to save a copy as best.npz.
     """
 
-    model_file = os.path.join(model_dir, '{}.npz'.format(model_name))
+    model_file = os.path.join(model_dir, f'{model_name}.npz')
     np.savez(model_file,
              params=np.array(params),
              obs_params=np.array(obs_params))
@@ -121,7 +121,7 @@ def save_lattices(log_dir: str,
                   params_lattice: jnp.ndarray,
                   occupancy_lattice: jnp.ndarray) -> None:
     """Save QD method's lattices."""
-    file_name = os.path.join(log_dir, '{}.npz'.format(file_name))
+    file_name = os.path.join(log_dir, f'{file_name}.npz')
     np.savez(file_name,
              params_lattice=np.array(params_lattice),
              fitness_lattice=np.array(fitness_lattice),

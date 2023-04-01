@@ -58,11 +58,7 @@ class MAPElites(QualityDiversityMethod):
             logger - Logging utility.
         """
 
-        if logger is None:
-            self._logger = create_logger(name='MAP_ELITES')
-        else:
-            self._logger = logger
-
+        self._logger = create_logger(name='MAP_ELITES') if logger is None else logger
         self.pop_size = abs(pop_size)
         self.param_size = param_size
         self.bd_names = [x[0] for x in bd_extractor.bd_spec]
@@ -90,6 +86,7 @@ class MAPElites(QualityDiversityMethod):
                     sample_key, shape=(2 * self.pop_size, self.param_size)),
             )
             return new_key, mutate_key, parents.reshape((2, self.pop_size, -1))
+
         self._sample_parents = jax.jit(sample_parents)
 
         def generate_population(parents, key):
@@ -100,12 +97,14 @@ class MAPElites(QualityDiversityMethod):
                     jax.random.uniform(
                         key=k2, minval=0, maxval=line_sigma, shape=()) *
                     (parents[1] - parents[0]))
+
         self._gen_pop = jax.jit(generate_population)
 
         def get_bin_idx(task_state):
             bd_idx = [
                 task_state.__dict__[name].astype(int) for name in self.bd_names]
             return jnp.ravel_multi_index(bd_idx, self.bd_n_bins, mode='clip')
+
         self._get_bin_idx = jax.jit(jax.vmap(get_bin_idx))
 
         def update_fitness_and_param(
@@ -121,6 +120,7 @@ class MAPElites(QualityDiversityMethod):
                 best_fitness > fitness_lattice[target_bin],
                 param[best_ix], param_lattice[target_bin])
             return new_fitness_lattice, new_param_lattice
+
         self._update_lattices = jax.jit(jax.vmap(
             update_fitness_and_param,
             in_axes=(0, None, None, None, None, None)))

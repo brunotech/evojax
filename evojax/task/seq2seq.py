@@ -43,8 +43,7 @@ class CharacterTable(object):
         self.pad_id = len(self._chars)
         self.eos_id = self.pad_id + 1
         self.vocab_size = len(self._chars) + 2
-        self._indices_char = dict(
-            (idx, ch) for idx, ch in enumerate(self._chars))
+        self._indices_char = dict(enumerate(self._chars))
         self._indices_char[self.pad_id] = '_'
 
     def encode(self, inputs: jnp.ndarray) -> jnp.ndarray:
@@ -72,8 +71,8 @@ class Seq2seqTask(VectorizedTask):
         max_input_len = max_len_query_digit + 2 + 2
         max_output_len = max_len_query_digit + 3
         max_num = pow(10, max_len_query_digit)
-        self.obs_shape = tuple([max_input_len, char_table.vocab_size])
-        self.act_shape = tuple([max_output_len, char_table.vocab_size])
+        self.obs_shape = max_input_len, char_table.vocab_size
+        self.act_shape = max_output_len, char_table.vocab_size
         self.max_steps = 1
 
         def encode_onehot(batch_inputs, max_len):
@@ -89,6 +88,7 @@ class Seq2seqTask(VectorizedTask):
         def decode_onehot(batch_inputs):
             return np.array(list(map(
                 lambda x: char_table.decode(x.argmax(axis=-1)), batch_inputs)))
+
         self.decode_embeddings = decode_onehot
 
         def breakdown_int(n):
@@ -121,6 +121,7 @@ class Seq2seqTask(VectorizedTask):
             return State(
                 obs=jnp.repeat(batch_data[None, :], key.shape[0], axis=0),
                 labels=jnp.repeat(batch_labels[None, :], key.shape[0], axis=0))
+
         self._reset_fn = jax.jit(reset_fn)
 
         def get_sequence_lengths(sequence_batch):
@@ -152,6 +153,7 @@ class Seq2seqTask(VectorizedTask):
                 reward = -cross_entropy_loss(action, labels, lengths)
             done = jnp.ones((), dtype=jnp.int32)
             return state, reward, done
+
         self._step_fn = jax.jit(jax.vmap(step_fn))
 
     def reset(self, key: jnp.array) -> State:

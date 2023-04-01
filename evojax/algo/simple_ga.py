@@ -32,11 +32,7 @@ class SimpleGA(NEAlgorithm):
             logger - Logger
         """
 
-        if logger is None:
-            self.logger = create_logger(name='SimpleGA')
-        else:
-            self.logger = logger
-
+        self.logger = create_logger(name='SimpleGA') if logger is None else logger
         self.param_size = param_size
 
         self.pop_size = abs(pop_size)

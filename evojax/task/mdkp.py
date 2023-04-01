@@ -104,11 +104,12 @@ class MDKP(VectorizedTask):
         self.caps = caps
         items = jnp.array(items)
         caps = jnp.array(caps)
-        self.obs_shape = tuple([num_items, num_attrs + 1])
-        self.act_shape = tuple([num_bins, num_items])
+        self.obs_shape = num_items, num_attrs + 1
+        self.act_shape = num_bins, num_items
 
         def reset_fn(key):
             return State(obs=items, sel=jnp.zeros([num_bins, num_items]))
+
         self._reset_fn = jax.jit(jax.vmap(reset_fn))
 
         def step_fn(state, action):
@@ -126,6 +127,7 @@ class MDKP(VectorizedTask):
                 jnp.where(bin_items_attr_sum[:, :-1] > caps, 0, 1).ravel())
             reward = reward * violation
             return State(obs=state.obs, sel=action), reward, jnp.ones(())
+
         self._step_fn = jax.jit(jax.vmap(step_fn))
 
     def reset(self, key: jnp.array) -> TaskState:

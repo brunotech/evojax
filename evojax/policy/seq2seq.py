@@ -43,8 +43,7 @@ class CharacterTable(object):
         self.pad_id = len(self._chars)
         self.eos_id = self.pad_id + 1
         self.vocab_size = len(self._chars) + 2
-        self._indices_char = dict(
-            (idx, ch) for idx, ch in enumerate(self._chars))
+        self._indices_char = dict(enumerate(self._chars))
         self._indices_char[self.pad_id] = '_'
 
     def encode(self, inputs: jnp.ndarray) -> jnp.ndarray:
@@ -178,11 +177,7 @@ class Seq2seqPolicy(PolicyNetwork):
                  teacher_force: bool = False,
                  max_len_query_digit: int = 3,
                  logger: logging.Logger = None):
-        if logger is None:
-            self._logger = create_logger('Seq2seqPolicy')
-        else:
-            self._logger = logger
-
+        self._logger = create_logger('Seq2seqPolicy') if logger is None else logger
         max_input_len = max_len_query_digit + 2 + 2
         max_output_len = max_len_query_digit + 3
         encoder_shape = jnp.ones(
@@ -200,11 +195,14 @@ class Seq2seqPolicy(PolicyNetwork):
 
         def forward_fn(p, o):
             x = jax.nn.one_hot(
-                char_table.encode(jnp.array([11]))[0:1], char_table.vocab_size,
-                dtype=jnp.float32)
+                char_table.encode(jnp.array([11]))[:1],
+                char_table.vocab_size,
+                dtype=jnp.float32,
+            )
             x = jnp.tile(x, (o.shape[0], max_output_len, 1))
             logits, predictions = model.apply({'params': p}, o, x)
             return logits
+
         self._forward_fn = jax.vmap(forward_fn)
 
     def get_actions(self,

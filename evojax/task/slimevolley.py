@@ -322,10 +322,25 @@ def getObsArray(rs: Observation):
     # scale inputs to be in the order
     # of magnitude of 10 for neural network. (legacy)
     scaleFactor = 10.0
-    result = jnp.array([rs.x, rs.y, rs.vx, rs.vy,
-                        rs.bx, rs.by, rs.bvx, rs.bvy,
-                        rs.ox, rs.oy, rs.ovx, rs.ovy]) / scaleFactor
-    return result
+    return (
+        jnp.array(
+            [
+                rs.x,
+                rs.y,
+                rs.vx,
+                rs.vy,
+                rs.bx,
+                rs.by,
+                rs.bvx,
+                rs.bvy,
+                rs.ox,
+                rs.oy,
+                rs.ovx,
+                rs.ovy,
+            ]
+        )
+        / scaleFactor
+    )
 
 
 class Particle:
@@ -427,7 +442,7 @@ class Particle:
         total_r2 = total_r*total_r
 
         # this was a while loop in the orig code, but most cases < 15.
-        for i in range(15):
+        for _ in range(15):
             total_d2 = (dy*dy + dx*dx)
             new_x = jnp.where(total_d2 < total_r2, new_x+abx, new_x)
             new_y = jnp.where(total_d2 < total_r2, new_y+aby, new_y)
@@ -843,9 +858,9 @@ def update_state(action: jnp.ndarray, game_state: GameState, key: jnp.array):
 
 
 def detect_done(game_state: GameState):
-    result = jnp.bitwise_or(
-        game_state.agent_left.life <= 0, game_state.agent_right.life <= 0)
-    return result
+    return jnp.bitwise_or(
+        game_state.agent_left.life <= 0, game_state.agent_right.life <= 0
+    )
 
 
 def get_obs(game_state: GameState):
@@ -861,8 +876,8 @@ class SlimeVolley(VectorizedTask):
                  test: bool = False):
 
         self.max_steps = max_steps
-        self.obs_shape = tuple([12, ])
-        self.act_shape = tuple([3, ])
+        self.obs_shape = (12, )
+        self.act_shape = (3, )
         self.test = test
 
         def reset_fn(key):
@@ -870,6 +885,7 @@ class SlimeVolley(VectorizedTask):
             game_state = get_init_game_state_fn(key)
             return State(game_state=game_state, obs=get_obs(game_state),
                          steps=jnp.zeros((), dtype=int), key=next_key)
+
         self._reset_fn = jax.jit(jax.vmap(reset_fn))
 
         def step_fn(state, action):
@@ -884,6 +900,7 @@ class SlimeVolley(VectorizedTask):
             steps = jnp.where(done, jnp.zeros((), jnp.int32), steps)
             return State(game_state=cur_state, obs=obs,
                          steps=steps, key=next_key), reward, done
+
         self._step_fn = jax.jit(jax.vmap(step_fn))
 
     def reset(self, key: jnp.ndarray) -> State:
@@ -899,5 +916,4 @@ class SlimeVolley(VectorizedTask):
         """Render a specified task."""
         game = Game(state.game_state)
         canvas = game.display()
-        img = Image.fromarray(canvas)
-        return img
+        return Image.fromarray(canvas)

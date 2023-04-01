@@ -72,8 +72,8 @@ class BraxTask(VectorizedTask):
             episode_length=max_steps,
             legacy_spring=legacy_spring,
         )
-        self.obs_shape = tuple([brax_env.observation_size, ])
-        self.act_shape = tuple([brax_env.action_size, ])
+        self.obs_shape = (brax_env.observation_size, )
+        self.act_shape = (brax_env.action_size, )
 
         def detect_feet_contact(state, action):
             _, info = brax_env.sys.step(state.qp, action)

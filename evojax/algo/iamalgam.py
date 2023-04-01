@@ -67,11 +67,7 @@ class iAMaLGaM(NEAlgorithm):
 
         # Set up object variables.
 
-        if logger is None:
-            self.logger = create_logger(name="iAMaLGaM")
-        else:
-            self.logger = logger
-
+        self.logger = create_logger(name="iAMaLGaM") if logger is None else logger
         self.param_size = param_size
         self.pop_size = abs(pop_size)
         self.rand_key = jax.random.PRNGKey(seed=seed)

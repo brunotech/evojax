@@ -88,10 +88,7 @@ class BDExtractor(object):
                              that definition to record data in rollouts.
         """
         self.bd_spec = bd_spec
-        if bd_state_spec is None:
-            self.bd_state_spec = []
-        else:
-            self.bd_state_spec = bd_state_spec
+        self.bd_state_spec = [] if bd_state_spec is None else bd_state_spec
         self.extended_task_state = self.get_extended_task_state_def(
             task_state_def)
 
@@ -105,19 +102,16 @@ class BDExtractor(object):
         """
         if self.bd_spec is None:
             return task_state_def
-        else:
-            fields = []
-            # Keep what is in the original task_state.
-            data_fields = task_state_def.__dict__['__annotations__']
-            for name, field in data_fields.items():
-                fields.append((name, field))
-            # Add bd fields.
-            fields.extend([(x[0], jnp.int32) for x in self.bd_spec])
-            # Add extra bd state fields to help the calculation.
-            fields.extend(self.bd_state_spec)
-            return dataclass(dataclasses.make_dataclass(
-                type(task_state_def).__name__,
-                fields=fields, bases=task_state_def.__bases__, init=False))
+        # Keep what is in the original task_state.
+        data_fields = task_state_def.__dict__['__annotations__']
+        fields = list(data_fields.items())
+        # Add bd fields.
+        fields.extend([(x[0], jnp.int32) for x in self.bd_spec])
+        # Add extra bd state fields to help the calculation.
+        fields.extend(self.bd_state_spec)
+        return dataclass(dataclasses.make_dataclass(
+            type(task_state_def).__name__,
+            fields=fields, bases=task_state_def.__bases__, init=False))
 
     def init_extended_state(self, task_state: TaskState) -> T:
         """Return an extended task_state that includes bd_state fields.
